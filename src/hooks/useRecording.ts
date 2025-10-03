@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { clearTextsCache } from './useTexts';
 
 interface Recording {
   id: string;
@@ -20,7 +21,12 @@ export function useRecording(textId: string) {
   const fetchRecording = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/recordings/by-text/${textId}`);
+      const response = await fetch(`/api/recordings/by-text/${textId}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      });
       
       if (!response.ok) {
         throw new Error('録音の取得に失敗しました');
@@ -51,6 +57,9 @@ export function useRecording(textId: string) {
       }
 
       setRecording(null);
+      
+      // 一覧画面のキャッシュもクリア
+      clearTextsCache();
     } catch (err) {
       throw err;
     }

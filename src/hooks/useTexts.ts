@@ -8,6 +8,12 @@ let cachedTexts: TextWithRecording[] | null = null;
 let cacheTimestamp: number | null = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5分
 
+// キャッシュをクリアする関数をエクスポート
+export function clearTextsCache() {
+  cachedTexts = null;
+  cacheTimestamp = null;
+}
+
 export function useTexts() {
   const [texts, setTexts] = useState<TextWithRecording[]>(cachedTexts || []);
   const [isLoading, setIsLoading] = useState(!cachedTexts);
@@ -23,7 +29,12 @@ export function useTexts() {
 
     try {
       setIsLoading(true);
-      const response = await fetch('/api/texts');
+      const response = await fetch('/api/texts', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      });
       
       if (!response.ok) {
         throw new Error('テキストの取得に失敗しました');
@@ -51,8 +62,7 @@ export function useTexts() {
 
   const refetch = useCallback(() => {
     // キャッシュをクリアして再取得
-    cachedTexts = null;
-    cacheTimestamp = null;
+    clearTextsCache();
     fetchTexts();
   }, [fetchTexts]);
 
