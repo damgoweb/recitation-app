@@ -54,7 +54,7 @@ export default async function TextDetailPage({
       {/* ヘッダー */}
       <div className="bg-white rounded-xl shadow-md p-6 mb-6">
         <div className="flex items-start justify-between mb-4">
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {text.title}
             </h1>
@@ -62,11 +62,20 @@ export default async function TextDetailPage({
               {text.author}
             </p>
           </div>
-          {text.isCustom && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
-              カスタム
-            </span>
-          )}
+          <div className="flex gap-3">
+            {text.isCustom && (
+              <>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                  カスタム
+                </span>
+                <Link href={`/texts/${id}/edit`}>
+                  <Button variant="secondary">
+                    編集
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
