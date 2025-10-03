@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button, Modal } from '@/components/ui';
 import { useRecorder } from '@/hooks';
 import { formatDuration } from '@/lib/utils';
+import { clearTextsCache } from '@/hooks/useTexts';
 
 interface RecordingControlsProps {
   textId: string;
@@ -76,6 +77,12 @@ export function RecordingControls({
       if (!response.ok || !result.success) {
         throw new Error(result.error?.message || 'アップロードに失敗しました');
       }
+
+      // 一覧画面のキャッシュをクリア
+      clearTextsCache();
+
+      // データベースのレプリケーション遅延を考慮して待機
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // 成功したらコールバックを実行
       onRecordingComplete();
