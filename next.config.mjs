@@ -6,6 +6,35 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // 静的ファイルのみ長期キャッシュ
+        source: '/(.*)\\.(js|css|woff|woff2|ttf|eot|png|jpg|jpeg|gif|webp|svg|ico)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // APIルートはキャッシュしない
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, max-age=0',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+        ],
+      },
+      {
+        // その他のページ
         source: '/:path*',
         headers: [
           {
@@ -23,10 +52,6 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'microphone=(self)',
-          },
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
@@ -53,6 +78,7 @@ export default withPWA({
   disable: process.env.NODE_ENV === 'development',
   runtimeCaching: [
     {
+      // Blobストレージのみキャッシュ（音声ファイル）
       urlPattern: /^https:\/\/.*\.vercel-storage\.com\/.*/i,
       handler: 'CacheFirst',
       options: {
@@ -64,14 +90,20 @@ export default withPWA({
       },
     },
     {
+      // APIルートはキャッシュしない
+      urlPattern: /^https?:\/\/[^\/]+\/api\/.*/i,
+      handler: 'NetworkOnly',
+    },
+    {
+      // その他はNetworkFirst
       urlPattern: /^https?:\/\/.*/i,
       handler: 'NetworkFirst',
       options: {
         cacheName: 'https-cache',
-        networkTimeoutSeconds: 10,
+        networkTimeoutSeconds: 5,
         expiration: {
-          maxEntries: 200,
-          maxAgeSeconds: 7 * 24 * 60 * 60, // 7日
+          maxEntries: 50,
+          maxAgeSeconds: 24 * 60 * 60, // 1日
         },
       },
     },
