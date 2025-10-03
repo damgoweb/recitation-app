@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useTexts } from '@/hooks/useTexts';
 import { Button, Loading } from '@/components/ui';
+import { useEffect } from 'react';  // 追加
 
 // 重いコンポーネントを動的インポート
 const ProgressBar = dynamic(() => import('@/components/ProgressBar').then(mod => ({ default: mod.ProgressBar })), {
@@ -16,7 +17,12 @@ const TextList = dynamic(() => import('@/components/TextList').then(mod => ({ de
 
 export default function HomePage() {
   const router = useRouter();
-  const { texts, isLoading, error } = useTexts();
+  const { texts, isLoading, error, refetch } = useTexts();  // refetch を追加
+
+  // ページが表示されるたびに最新データを取得
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const recordedCount = texts.filter(t => t.hasRecording).length;
   const totalCount = texts.length;
