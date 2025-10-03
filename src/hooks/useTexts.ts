@@ -1,14 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { TextWithRecording } from '@/types';
 
+// メモリキャッシュ
+let cachedTexts: TextWithRecording[] | null = null;
+let cacheTimestamp: number | null = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5分
+
 export function useTexts() {
-  const [texts, setTexts] = useState<TextWithRecording[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [texts, setTexts] = useState<TextWithRecording[]>(cachedTexts || []);
+  const [isLoading, setIsLoading] = useState(!cachedTexts);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTexts = async () => {
+  const fetchTexts = useCallback(async () => {
+    // キャッシュが有効な場合は使用
+    if (cachedTexts && cacheTimestamp && Date.now() - cacheTimestamp < CACHE_DURATION) {
+      setTexts(cachedTexts);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await fetch('/api/texts');
@@ -20,6 +32,8 @@ export function useTexts() {
       const data = await response.json();
       
       if (data.success) {
+        cachedTexts = data.data;
+        cacheTimestamp = Date.now();
         setTexts(data.data);
       } else {
         throw new Error(data.error?.message || 'エラーが発生しました');
@@ -29,16 +43,23 @@ export function useTexts() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchTexts();
-  }, []);
+  }, [fetchTexts]);
+
+  const refetch = useCallback(() => {
+    // キャッシュをクリアして再取得
+    cachedTexts = null;
+    cacheTimestamp = null;
+    fetchTexts();
+  }, [fetchTexts]);
 
   return {
     texts,
     isLoading,
     error,
-    refetch: fetchTexts,
+    refetch,
   };
 }

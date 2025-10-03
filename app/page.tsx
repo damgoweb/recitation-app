@@ -1,10 +1,18 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useTexts } from '@/hooks/useTexts';
 import { Button, Loading } from '@/components/ui';
-import { ProgressBar } from '@/components/ProgressBar';
-import { TextList } from '@/components/TextList';
+
+// 重いコンポーネントを動的インポート
+const ProgressBar = dynamic(() => import('@/components/ProgressBar').then(mod => ({ default: mod.ProgressBar })), {
+  loading: () => <div className="h-20 bg-gray-200 animate-pulse rounded-xl" />,
+});
+
+const TextList = dynamic(() => import('@/components/TextList').then(mod => ({ default: mod.TextList })), {
+  loading: () => <Loading size="md" />,
+});
 
 export default function HomePage() {
   const router = useRouter();
@@ -39,7 +47,6 @@ export default function HomePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* ヘッダーセクション */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
           テキスト一覧
@@ -48,12 +55,10 @@ export default function HomePage() {
           作品を選んで朗読練習を始めましょう
         </p>
 
-        {/* 進捗バー */}
         <div className="bg-white rounded-xl shadow-md p-6 mb-6">
           <ProgressBar total={totalCount} completed={recordedCount} />
         </div>
 
-        {/* 新規追加ボタン */}
         <Button
           variant="primary"
           size="lg"
@@ -64,7 +69,6 @@ export default function HomePage() {
         </Button>
       </div>
 
-      {/* テキスト一覧 */}
       <TextList
         texts={texts}
         onTextClick={(id) => router.push(`/texts/${id}`)}

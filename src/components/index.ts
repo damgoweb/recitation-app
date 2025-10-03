@@ -6,4 +6,5 @@ export { TextForm } from './TextForm';
 export { RecordingControls } from './RecordingControls';
 export { AudioPlayer } from './AudioPlayer';
 export { TextDetailClient } from './TextDetailClient';
+export { OfflineNotice } from './OfflineNotice';
 export * from './ui';

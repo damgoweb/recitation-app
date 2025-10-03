@@ -33,20 +33,43 @@ export function useRecorder(): UseRecorderReturn {
     try {
       setError(null);
       
-      // マイクの許可を取得
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-      // サポートされているMIMEタイプを確認
-      let mimeType = 'audio/webm';
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        if (MediaRecorder.isTypeSupported('audio/mp4')) {
-          mimeType = 'audio/mp4';
-        } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
-          mimeType = 'audio/ogg';
-        }
+      // ブラウザの互換性チェック
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('このブラウザは録音機能に対応していません。Chrome、Safari、Edgeなどの最新ブラウザをお使いください。');
       }
 
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      // HTTPSチェック（localhost以外）
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        throw new Error('録音機能を使用するにはHTTPS接続が必要です。');
+      }
+
+      // マイクの許可を取得
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        }
+      });
+
+      // サポートされているMIMEタイプを確認
+      const mimeTypes = [
+        'audio/webm',
+        'audio/webm;codecs=opus',
+        'audio/ogg;codecs=opus',
+        'audio/mp4',
+        'audio/mpeg',
+      ];
+
+      let mimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type));
+      
+      if (!mimeType) {
+        // フォールバック: MIMEタイプ指定なし
+        mimeType = '';
+      }
+
+      const options = mimeType ? { mimeType } : undefined;
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
@@ -57,7 +80,8 @@ export function useRecorder(): UseRecorderReturn {
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: mimeType });
+        const finalMimeType = mimeType || 'audio/webm';
+        const blob = new Blob(chunksRef.current, { type: finalMimeType });
         setAudioBlob(blob);
         
         // 再生用のURLを作成
@@ -72,6 +96,11 @@ export function useRecorder(): UseRecorderReturn {
           clearInterval(timerRef.current);
           timerRef.current = null;
         }
+      };
+
+      mediaRecorder.onerror = (event: Event) => {
+        console.error('MediaRecorder error:', event);
+        setError('録音中にエラーが発生しました');
       };
 
       mediaRecorder.start();
@@ -92,8 +121,12 @@ export function useRecorder(): UseRecorderReturn {
           setError('マイクの使用が許可されていません。ブラウザの設定を確認してください。');
         } else if (err.name === 'NotFoundError') {
           setError('マイクが見つかりません。マイクが接続されているか確認してください。');
+        } else if (err.name === 'NotSupportedError') {
+          setError('このブラウザは録音機能に対応していません。');
+        } else if (err.name === 'SecurityError') {
+          setError('セキュリティエラー: HTTPS接続が必要です。');
         } else {
-          setError('録音の開始に失敗しました: ' + err.message);
+          setError(err.message || '録音の開始に失敗しました');
         }
       } else {
         setError('録音の開始に失敗しました');

@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
+import { OfflineNotice } from "@/components/OfflineNotice";
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
@@ -20,6 +21,14 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#3b82f6",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,12 +36,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+      </head>
       <body className={notoSansJP.className}>
         <div className="min-h-screen flex flex-col bg-gray-50">
           <Header />
           <main className="flex-1">
             {children}
           </main>
+          <OfflineNotice />
         </div>
       </body>
     </html>

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Card } from '@/components/ui';
 import { TextWithRecording } from '@/types';
 import { formatDistance } from 'date-fns';
@@ -8,7 +9,7 @@ interface TextCardProps {
   onClick: () => void;
 }
 
-export function TextCard({ text, onClick }: TextCardProps) {
+export const TextCard = memo(function TextCard({ text, onClick }: TextCardProps) {
   return (
     <Card onClick={onClick} hoverable>
       <div className="flex flex-col gap-3">
@@ -70,4 +71,4 @@ export function TextCard({ text, onClick }: TextCardProps) {
       </div>
     </Card>
   );
-}
+});
