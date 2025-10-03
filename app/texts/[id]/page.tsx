@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { sql } from '@vercel/postgres';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
+import { TextDetailClient } from '@/components/TextDetailClient';
 
 async function getText(id: string) {
   try {
@@ -89,16 +90,8 @@ export default async function TextDetailPage({
         </div>
       </div>
 
-      {/* 録音機能エリア（Phase 3で実装予定） */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">録音</h2>
-        <p className="text-lg text-gray-600 mb-4">
-          録音機能は Phase 3 で実装予定です
-        </p>
-        <Button variant="primary" size="lg" disabled>
-          録音開始（準備中）
-        </Button>
-      </div>
+      {/* 録音機能エリア */}
+      <TextDetailClient textId={id} />
     </div>
   );
 }

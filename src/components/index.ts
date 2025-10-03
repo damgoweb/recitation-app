@@ -3,4 +3,7 @@ export { ProgressBar } from './ProgressBar';
 export { TextCard } from './TextCard';
 export { TextList } from './TextList';
 export { TextForm } from './TextForm';
+export { RecordingControls } from './RecordingControls';
+export { AudioPlayer } from './AudioPlayer';
+export { TextDetailClient } from './TextDetailClient';
 export * from './ui';
