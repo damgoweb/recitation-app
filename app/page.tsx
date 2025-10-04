@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useTexts } from '@/hooks/useTexts';
 import { Button, Loading } from '@/components/ui';
-import { useEffect } from 'react';  // 追加
+import { useEffect } from 'react';
+import { ExportButton } from '@/components/ExportButton';
 
 // 重いコンポーネントを動的インポート
 const ProgressBar = dynamic(() => import('@/components/ProgressBar').then(mod => ({ default: mod.ProgressBar })), {
@@ -17,7 +18,7 @@ const TextList = dynamic(() => import('@/components/TextList').then(mod => ({ de
 
 export default function HomePage() {
   const router = useRouter();
-  const { texts, isLoading, error, refetch } = useTexts();  // refetch を追加
+  const { texts, isLoading, error, refetch } = useTexts();
 
   // ページが表示されるたびに最新データを取得
   useEffect(() => {
@@ -65,14 +66,17 @@ export default function HomePage() {
           <ProgressBar total={totalCount} completed={recordedCount} />
         </div>
 
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={() => router.push('/texts/new')}
-          className="w-full sm:w-auto"
-        >
-          + 新しいテキストを追加
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => router.push('/texts/new')}
+            className="flex-1 sm:flex-initial"
+          >
+            + 新しいテキストを追加
+          </Button>
+          <ExportButton />
+        </div>
       </div>
 
       <TextList

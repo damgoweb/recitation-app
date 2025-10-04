@@ -68,7 +68,12 @@ export function useRecorder(): UseRecorderReturn {
         mimeType = '';
       }
 
-      const options = mimeType ? { mimeType } : undefined;
+      // 低ビットレート設定（32kbps）でファイルサイズを削減
+      const options = mimeType ? { 
+        mimeType,
+        audioBitsPerSecond: 32000  // 32kbps - 朗読音声に最適
+      } : undefined;
+      
       const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
